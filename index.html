@@ -5,15 +5,36 @@
     <title>Guerra Comercial Tycoon 3D</title>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #0f172a; user-select: none; }
-        #pantalla-inicio { position: fixed; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; color: white; }
+        
+        /* CORRECCIÓN: Forzar que el menú de inicio esté siempre al frente de todo */
+        #pantalla-inicio { 
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(15, 23, 42, 0.95); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 9999 !important; 
+            color: white; 
+        }
+        
         .botones-inicio { display: flex; gap: 40px; margin-top: 30px; }
-        .btn-bando { padding: 20px 40px; font-size: 1.5rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+        .btn-bando { padding: 20px 40px; font-size: 1.5rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: transform 0.2s; position: relative; z-index: 10000; }
         .btn-usa { background: #ef4444; color: white; border-bottom: 6px solid #b91c1c; }
         .btn-china { background: #eab308; color: #1e293b; border-bottom: 6px solid #a16207; }
         .btn-bando:hover { transform: scale(1.1); }
-        #hud { position: fixed; top: 20px; left: 20px; color: white; font-size: 1.8rem; font-weight: bold; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 8px; }
+        
+        #hud { position: fixed; top: 20px; left: 20px; color: white; font-size: 1.8rem; font-weight: bold; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 8px; pointer-events: none; }
         #alerta { position: fixed; top: 20px; right: 20px; background: #ef4444; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; display: none; z-index: 5; animation: parpadeo 1s infinite; max-width: 350px; box-shadow: 0 4px 15px rgba(239,68,68,0.5); }
         #instrucciones { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; z-index: 5; pointer-events: none; }
+        
+        /* Estilo para el lienzo 3D */
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
         @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
     <script src="https://cloudflare.com"></script>
@@ -41,6 +62,7 @@
         let fabricasCompradas = 0;
         let moneda = '\$';
 
+        // Configuración de la escena 3D
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1e293b);
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -81,16 +103,23 @@
         function elegirBando(seleccion) {
             bando = seleccion;
             moneda = bando === 'usa' ? '\$' : '¥';
+            
+            // CORRECCIÓN: Cambio seguro de color para Three.js
             player.material.color.setHex(bando === 'usa' ? 0x3b82f6 : 0xeab308);
             scene.background.setHex(bando === 'usa' ? 0x0f172a : 0x451a03);
+            
             document.getElementById('pantalla-inicio').style.display = 'none';
             actualizarHUD();
+
+            // Producción activa
             setInterval(() => {
                 if (fabricasCompradas > 0) {
                     dinero += Math.round(fabricasCompradas * 5 * multiplicador);
                     actualizarHUD();
                 }
             }, 1500);
+
+            // Alertas de impuestos activas
             setInterval(() => {
                 let azar = Math.random();
                 const alertaDiv = document.getElementById('alerta');
